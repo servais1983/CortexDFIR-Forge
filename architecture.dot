@@ -1,0 +1,74 @@
+digraph G {
+    rankdir=TB;
+    node [shape=box, style=filled, fillcolor=lightblue, fontname="Arial"];
+    edge [fontname="Arial"];
+    
+    // Nœuds principaux
+    UI [label="Interface Utilisateur\n(PyQt5)", fillcolor="#AED6F1"];
+    Core [label="Noyau d'Analyse\n(Core)", fillcolor="#AED6F1"];
+    CortexClient [label="Client Cortex XDR", fillcolor="#F5B7B1"];
+    FileAnalyzer [label="Analyseur de Fichiers", fillcolor="#D5F5E3"];
+    YaraScanner [label="Scanner YARA", fillcolor="#FADBD8"];
+    ReportGenerator [label="Générateur de Rapports", fillcolor="#FCF3CF"];
+    ConfigManager [label="Gestionnaire de Configuration", fillcolor="#D2B4DE"];
+    
+    // Sous-composants
+    subgraph cluster_0 {
+        label="Modules d'Analyse";
+        style=filled;
+        color=lightgrey;
+        
+        VMDKAnalyzer [label="Analyseur VMDK", fillcolor="#D5F5E3"];
+        LogAnalyzer [label="Analyseur Logs", fillcolor="#D5F5E3"];
+        CSVAnalyzer [label="Analyseur CSV", fillcolor="#D5F5E3"];
+        ExeAnalyzer [label="Analyseur Exécutables", fillcolor="#D5F5E3"];
+        ScriptAnalyzer [label="Analyseur Scripts", fillcolor="#D5F5E3"];
+    }
+    
+    subgraph cluster_1 {
+        label="Ressources Externes";
+        style=filled;
+        color=lightgrey;
+        
+        YaraRules [label="Règles YARA", fillcolor="#FADBD8"];
+        Templates [label="Templates HTML", fillcolor="#FCF3CF"];
+        Config [label="Fichiers de Configuration", fillcolor="#D2B4DE"];
+    }
+    
+    // Relations
+    UI -> Core [label="Commandes"];
+    Core -> UI [label="Résultats"];
+    
+    Core -> CortexClient [label="Requêtes API"];
+    CortexClient -> Core [label="Réponses API"];
+    
+    Core -> FileAnalyzer [label="Fichiers à analyser"];
+    FileAnalyzer -> Core [label="Résultats d'analyse"];
+    
+    FileAnalyzer -> VMDKAnalyzer [label="Si VMDK"];
+    FileAnalyzer -> LogAnalyzer [label="Si Log"];
+    FileAnalyzer -> CSVAnalyzer [label="Si CSV"];
+    FileAnalyzer -> ExeAnalyzer [label="Si EXE/DLL"];
+    FileAnalyzer -> ScriptAnalyzer [label="Si Script"];
+    
+    FileAnalyzer -> YaraScanner [label="Scan YARA"];
+    YaraScanner -> YaraRules [label="Utilise"];
+    YaraScanner -> FileAnalyzer [label="Résultats YARA"];
+    
+    Core -> ReportGenerator [label="Données pour rapport"];
+    ReportGenerator -> Templates [label="Utilise"];
+    ReportGenerator -> UI [label="Rapport HTML"];
+    
+    Core -> ConfigManager [label="Lecture/Écriture config"];
+    ConfigManager -> Config [label="Gère"];
+    ConfigManager -> CortexClient [label="Fournit credentials"];
+    
+    // Flux de données externes
+    CortexXDR [label="Cortex XDR API", shape=cloud, fillcolor="#F5B7B1"];
+    Files [label="Fichiers à analyser", shape=folder, fillcolor=white];
+    Report [label="Rapport HTML", shape=note, fillcolor=white];
+    
+    CortexClient -> CortexXDR [dir=both, label="API Calls"];
+    Files -> UI [label="Input"];
+    UI -> Report [label="Output"];
+}

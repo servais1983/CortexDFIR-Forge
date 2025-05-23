@@ -9,19 +9,19 @@
 - [x] Créer les fichiers d'installation (.bat)
 - [x] Initialiser le dépôt Git
 - [x] Configurer Git avec les informations nécessaires
-- [ ] Effectuer le premier commit
-- [ ] Créer le dépôt sur GitHub
-- [ ] Pousser le code vers GitHub
+- [x] Effectuer le premier commit
+- [x] Créer le dépôt sur GitHub
+- [x] Pousser le code vers GitHub
 
 ## Conception de la solution industrielle pour Cortex en DFIR
-- [ ] Analyser les meilleures pratiques DFIR professionnelles
-- [ ] Concevoir l'architecture de la solution
-- [ ] Développer les modules principaux
-- [ ] Implémenter l'intégration avec Cortex XDR
-- [ ] Créer les règles YARA
-- [ ] Développer le système de scoring
-- [ ] Implémenter la génération de rapports HTML
-- [ ] Tester la solution
+- [x] Analyser les meilleures pratiques DFIR professionnelles
+- [x] Concevoir l'architecture de la solution
+- [x] Développer les modules principaux
+- [x] Implémenter l'intégration avec Cortex XDR
+- [x] Créer les règles YARA
+- [x] Développer le système de scoring
+- [x] Implémenter la génération de rapports HTML
+- [x] Tester la solution
 
 ## Préparation de la présentation professionnelle
 - [ ] Créer une présentation du projet
