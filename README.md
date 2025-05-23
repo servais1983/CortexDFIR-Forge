@@ -8,10 +8,7 @@
 ![Python Version](https://img.shields.io/badge/python-3.8%2B-brightgreen)
 ![Status](https://img.shields.io/badge/status-active-success)
 
-<div align="center">
-  <img src="https://raw.githubusercontent.com/servais1983/CortexDFIR-Forge/master/architecture.png" alt="CortexDFIR-Forge Architecture" width="600">
-  <h3>Solution industrialisée pour l'utilisation de Cortex XDR en DFIR</h3>
-</div>
+
 
 ## 🔍 Présentation
 
