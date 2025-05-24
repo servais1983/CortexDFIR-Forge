@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/d981c5a5-1ea9-44f9-a794-911dbbed4bf8)
+
 
 
 # CortexDFIR-Forge
