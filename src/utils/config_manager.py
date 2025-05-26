@@ -1,7 +1,8 @@
 import os
 import logging
 import yaml
-from typing import Dict, Any
+from typing import Dict, Any, Optional
+from utils.secrets_manager import SecretsManager
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +17,11 @@ class ConfigManager:
         """
         self.config_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "config")
         self.config_file = os.path.join(self.config_dir, "config.yaml")
+        self.env_file = os.path.join(self.config_dir, ".env")
         self.config = {}
+        
+        # Initialisation du gestionnaire de secrets
+        self.secrets_manager = SecretsManager(self.env_file)
         
         # Création du répertoire de configuration s'il n'existe pas
         if not os.path.exists(self.config_dir):
@@ -34,7 +39,7 @@ class ConfigManager:
         try:
             if os.path.exists(self.config_file):
                 with open(self.config_file, "r") as f:
-                    self.config = yaml.safe_load(f)
+                    self.config = yaml.safe_load(f) or {}
                     
                 logger.info(f"Configuration chargée depuis {self.config_file}")
             else:
@@ -51,9 +56,7 @@ class ConfigManager:
         try:
             self.config = {
                 "cortex": {
-                    "api_key": "",
-                    "api_key_id": "",
-                    "tenant_id": "",
+                    "use_env_secrets": True,
                     "base_url": "https://api.xdr.paloaltonetworks.com"
                 },
                 "analysis": {
@@ -82,9 +85,7 @@ class ConfigManager:
             # Configuration minimale en mémoire
             self.config = {
                 "cortex": {
-                    "api_key": "",
-                    "api_key_id": "",
-                    "tenant_id": "",
+                    "use_env_secrets": True,
                     "base_url": "https://api.xdr.paloaltonetworks.com"
                 }
             }
@@ -97,6 +98,17 @@ class ConfigManager:
             True si la sauvegarde a réussi, False sinon
         """
         try:
+            # Assurez-vous que les secrets ne sont pas stockés dans le fichier de configuration
+            if "cortex" in self.config:
+                cortex_config = self.config["cortex"].copy()
+                # Suppression des secrets potentiels du dictionnaire de configuration
+                for key in ["api_key", "api_key_id", "tenant_id"]:
+                    if key in cortex_config:
+                        del cortex_config[key]
+                # Assurez-vous que use_env_secrets est défini à True
+                cortex_config["use_env_secrets"] = True
+                self.config["cortex"] = cortex_config
+            
             with open(self.config_file, "w") as f:
                 yaml.dump(self.config, f, default_flow_style=False)
             
@@ -114,16 +126,24 @@ class ConfigManager:
         Returns:
             Dictionnaire de configuration Cortex XDR
         """
-        return self.config.get("cortex", {})
+        cortex_config = self.config.get("cortex", {}).copy()
+        
+        # Si use_env_secrets est activé, récupérer les secrets depuis les variables d'environnement
+        if cortex_config.get("use_env_secrets", False):
+            credentials = self.secrets_manager.get_cortex_credentials()
+            cortex_config.update(credentials)
+        
+        return cortex_config
     
-    def set_cortex_config(self, api_key: str, api_key_id: str, tenant_id: str, base_url: str = None) -> bool:
+    def set_cortex_config(self, api_key: Optional[str] = None, api_key_id: Optional[str] = None, 
+                         tenant_id: Optional[str] = None, base_url: Optional[str] = None) -> bool:
         """
         Définit la configuration Cortex XDR
         
         Args:
-            api_key: Clé API Cortex XDR
-            api_key_id: ID de la clé API Cortex XDR
-            tenant_id: ID du tenant Cortex XDR
+            api_key: Clé API Cortex XDR (optionnel)
+            api_key_id: ID de la clé API Cortex XDR (optionnel)
+            tenant_id: ID du tenant Cortex XDR (optionnel)
             base_url: URL de base de l'API Cortex XDR (optionnel)
         
         Returns:
@@ -133,14 +153,62 @@ class ConfigManager:
             if "cortex" not in self.config:
                 self.config["cortex"] = {}
             
-            self.config["cortex"]["api_key"] = api_key
-            self.config["cortex"]["api_key_id"] = api_key_id
-            self.config["cortex"]["tenant_id"] = tenant_id
-            
+            # Mise à jour de l'URL de base dans le fichier de configuration
             if base_url:
                 self.config["cortex"]["base_url"] = base_url
             
-            return self.save_config()
+            # Stockage des secrets dans le fichier .env si fournis
+            secrets_updated = False
+            if api_key or api_key_id or tenant_id:
+                # Lecture du fichier .env existant
+                env_content = ""
+                if os.path.exists(self.env_file):
+                    with open(self.env_file, "r") as f:
+                        env_content = f.read()
+                
+                # Mise à jour des variables d'environnement
+                env_lines = env_content.split("\n")
+                updated_lines = []
+                
+                # Variables à mettre à jour
+                env_vars = {
+                    "CORTEX_API_KEY": api_key,
+                    "CORTEX_API_KEY_ID": api_key_id,
+                    "CORTEX_TENANT_ID": tenant_id,
+                    "CORTEX_BASE_URL": base_url
+                }
+                
+                # Filtrer les variables non fournies
+                env_vars = {k: v for k, v in env_vars.items() if v is not None}
+                
+                # Mise à jour des lignes existantes
+                for line in env_lines:
+                    line = line.strip()
+                    if not line or line.startswith("#"):
+                        updated_lines.append(line)
+                        continue
+                    
+                    var_name = line.split("=")[0] if "=" in line else ""
+                    if var_name in env_vars:
+                        updated_lines.append(f"{var_name}={env_vars[var_name]}")
+                        del env_vars[var_name]
+                    else:
+                        updated_lines.append(line)
+                
+                # Ajout des nouvelles variables
+                for var_name, value in env_vars.items():
+                    updated_lines.append(f"{var_name}={value}")
+                
+                # Écriture du fichier .env mis à jour
+                with open(self.env_file, "w") as f:
+                    f.write("\n".join(updated_lines))
+                
+                secrets_updated = True
+            
+            # Sauvegarde de la configuration
+            config_updated = self.save_config()
+            
+            return config_updated or secrets_updated
             
         except Exception as e:
             logger.error(f"Erreur lors de la mise à jour de la configuration Cortex XDR: {str(e)}", exc_info=True)

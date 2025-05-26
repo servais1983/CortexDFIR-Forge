@@ -52,10 +52,12 @@ class CortexClient:
         if "token" in self.token_cache and "expiry" in self.token_cache:
             if current_time < self.token_cache["expiry"]:
                 # Token en cache valide
-                return {
-                    "Authorization": f"Bearer {self.token_cache['token']}",
-                    "Content-Type": "application/json"
-                }
+                token = self.config_manager.secrets_manager.retrieve_token(self.token_cache)
+                if token:
+                    return {
+                        "Authorization": f"Bearer {token}",
+                        "Content-Type": "application/json"
+                    }
         
         # Génération d'un nouveau token si nécessaire
         if self.advanced_api and self.api_key and self.api_key_id:
@@ -70,25 +72,34 @@ class CortexClient:
                 # Endpoint pour l'authentification
                 endpoint = f"{self.base_url}/public_api/v1/auth/generate_token"
                 
-                # Envoi de la requête
-                response = requests.post(endpoint, headers=headers, json={})
+                # Envoi de la requête avec vérification SSL explicite et timeout
+                response = requests.post(
+                    endpoint, 
+                    headers=headers, 
+                    json={},
+                    verify=True,
+                    timeout=(5, 30)  # 5s pour la connexion, 30s pour la réponse
+                )
                 
                 # Vérification de la réponse
                 if response.status_code == 200:
                     result = response.json()
                     if "reply" in result and "token" in result["reply"]:
                         token = result["reply"]["token"]
-                        # Stockage du token avec une expiration (1 heure)
-                        self.token_cache = {
-                            "token": token,
-                            "expiry": current_time + timedelta(hours=1)
-                        }
+                        # Stockage du token avec une expiration (30 minutes au lieu d'1 heure)
+                        expiry = current_time + timedelta(minutes=30)
+                        self.token_cache = self.config_manager.secrets_manager.store_token(
+                            token, 
+                            expiry.isoformat()
+                        )
                         return {
                             "Authorization": f"Bearer {token}",
                             "Content-Type": "application/json"
                         }
             except Exception as e:
-                logger.error(f"Erreur lors de la génération du token: {str(e)}", exc_info=True)
+                # Éviter de journaliser les détails sensibles de l'erreur
+                logger.error("Erreur lors de la génération du token", exc_info=False)
+                logger.debug(f"Type d'erreur: {type(e).__name__}")
         
         # Fallback sur l'authentification de base
         return {
@@ -147,13 +158,20 @@ class CortexClient:
                 }
             }
             
-            # Envoi de la requête
-            response = requests.post(endpoint, headers=headers, files=files, data=data)
+            # Envoi de la requête avec vérification SSL explicite et timeout
+            response = requests.post(
+                endpoint, 
+                headers=headers, 
+                files=files, 
+                data=data,
+                verify=True,
+                timeout=(10, 120)  # 10s pour la connexion, 120s pour la réponse
+            )
             
             # Vérification de la réponse
             if response.status_code != 200:
-                logger.error(f"Erreur lors de l'analyse Cortex XDR: {response.text}")
-                raise Exception(f"Erreur Cortex XDR: {response.status_code} - {response.text}")
+                logger.error(f"Erreur lors de l'analyse Cortex XDR: Code {response.status_code}")
+                raise Exception(f"Erreur Cortex XDR: {response.status_code}")
             
             # Traitement de la réponse
             result = response.json()
@@ -172,7 +190,7 @@ class CortexClient:
                 return self._simulate_analysis(file_path)
             
         except Exception as e:
-            logger.error(f"Erreur lors de l'analyse Cortex XDR: {str(e)}", exc_info=True)
+            logger.error(f"Erreur lors de l'analyse Cortex XDR: {type(e).__name__}", exc_info=True)
             # En cas d'erreur, on simule l'analyse pour permettre la poursuite du processus
             return self._simulate_analysis(file_path)
     
@@ -200,7 +218,13 @@ class CortexClient:
         # Tentatives de récupération des résultats
         for attempt in range(max_retries):
             try:
-                response = requests.post(endpoint, headers=headers, json=data)
+                response = requests.post(
+                    endpoint, 
+                    headers=headers, 
+                    json=data,
+                    verify=True,
+                    timeout=(5, 30)  # 5s pour la connexion, 30s pour la réponse
+                )
                 
                 if response.status_code == 200:
                     result = response.json()
@@ -220,11 +244,11 @@ class CortexClient:
                             logger.warning(f"Statut d'analyse inattendu: {status}")
                             return result
                 else:
-                    logger.warning(f"Erreur lors de la récupération des résultats: {response.text}")
+                    logger.warning(f"Erreur lors de la récupération des résultats: Code {response.status_code}")
                     break
                     
             except Exception as e:
-                logger.error(f"Erreur lors de la récupération des résultats: {str(e)}", exc_info=True)
+                logger.error(f"Erreur lors de la récupération des résultats: {type(e).__name__}", exc_info=True)
                 break
         
         # Si on arrive ici, on n'a pas pu récupérer les résultats
@@ -381,50 +405,34 @@ class CortexClient:
                 "severity": "medium",
                 "description": "Les fichiers script peuvent contenir du code malveillant",
                 "details": {"file_extension": file_ext, "file_size": file_size},
-                "score": 6
+                "score": 5
             }
             results["threats"].append(threat)
-            results["score"] = 6
+            results["score"] = 5
             
-            # Ajout d'indicateurs simulés
-            results["indicators"].append({
-                "type": "script_pattern",
-                "value": "obfuscated_code",
-                "description": "Potentiel code obfusqué détecté",
-                "confidence": "medium"
-            })
-            
-        elif file_ext in [".vmdk", ".vhd", ".vhdx"]:
+        elif file_ext in [".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx"]:
             threat = {
                 "type": "cortex_simulated",
-                "name": "Disque virtuel - Analyse approfondie recommandée",
+                "name": "Document potentiellement malveillant",
                 "severity": "low",
-                "description": "Les disques virtuels peuvent contenir des systèmes de fichiers infectés",
+                "description": "Les documents peuvent contenir des macros ou des exploits",
                 "details": {"file_extension": file_ext, "file_size": file_size},
                 "score": 3
             }
             results["threats"].append(threat)
             results["score"] = 3
-            
-            # Ajout d'indicateurs simulés
-            results["indicators"].append({
-                "type": "file_type",
-                "value": "virtual_disk",
-                "description": "Disque virtuel détecté",
-                "confidence": "high"
-            })
         
         return results
     
-    def get_incident_details(self, incident_id: str) -> Optional[Dict[str, Any]]:
+    def get_incident_details(self, incident_id: str) -> Dict[str, Any]:
         """
-        Récupère les détails d'un incident depuis Cortex XDR
+        Récupère les détails d'un incident
         
         Args:
             incident_id: Identifiant de l'incident
         
         Returns:
-            Dictionnaire contenant les détails de l'incident, ou None si non trouvé
+            Dictionnaire contenant les détails de l'incident
         """
         logger.info(f"Récupération des détails de l'incident {incident_id}")
         
@@ -448,31 +456,37 @@ class CortexClient:
                 }
             }
             
-            # Envoi de la requête
-            response = requests.post(endpoint, headers=headers, json=data)
+            # Envoi de la requête avec vérification SSL explicite et timeout
+            response = requests.post(
+                endpoint, 
+                headers=headers, 
+                json=data,
+                verify=True,
+                timeout=(5, 30)  # 5s pour la connexion, 30s pour la réponse
+            )
             
             # Vérification de la réponse
             if response.status_code != 200:
-                logger.error(f"Erreur lors de la récupération des détails de l'incident: {response.text}")
-                return None
+                logger.error(f"Erreur lors de la récupération des détails de l'incident: Code {response.status_code}")
+                return self._simulate_incident_details(incident_id)
             
             # Traitement de la réponse
             result = response.json()
             
-            # Formatage des résultats
-            if "reply" in result and "incident" in result["reply"]:
-                return result["reply"]["incident"]
+            # Vérification du format de la réponse
+            if "reply" in result:
+                return result["reply"]
             else:
-                logger.warning(f"Format de réponse inattendu pour l'incident {incident_id}")
-                return None
+                logger.warning("Format de réponse inattendu pour les détails de l'incident")
+                return self._simulate_incident_details(incident_id)
             
         except Exception as e:
-            logger.error(f"Erreur lors de la récupération des détails de l'incident: {str(e)}", exc_info=True)
+            logger.error(f"Erreur lors de la récupération des détails de l'incident: {type(e).__name__}", exc_info=True)
             return self._simulate_incident_details(incident_id)
     
     def _simulate_incident_details(self, incident_id: str) -> Dict[str, Any]:
         """
-        Simule les détails d'un incident lorsque l'API n'est pas disponible
+        Simule les détails d'un incident
         
         Args:
             incident_id: Identifiant de l'incident
@@ -484,18 +498,14 @@ class CortexClient:
         
         return {
             "incident_id": incident_id,
+            "creation_time": datetime.now().isoformat(),
+            "modification_time": datetime.now().isoformat(),
             "status": "new",
             "severity": "high",
             "description": "Incident simulé pour démonstration",
-            "detection_time": datetime.now().isoformat(),
-            "host_count": 1,
-            "hosts": [
-                {
-                    "hostname": "DESKTOP-EXAMPLE",
-                    "ip": "192.168.1.100",
-                    "os": "Windows 10"
-                }
-            ],
+            "assigned_user_mail": "analyste@example.com",
+            "assigned_user_pretty_name": "Analyste Forensic",
+            "alert_count": 3,
             "alerts": [
                 {
                     "alert_id": "alert-001",
@@ -548,12 +558,18 @@ class CortexClient:
                 }
             }
             
-            # Envoi de la requête
-            response = requests.post(endpoint, headers=headers, json=data)
+            # Envoi de la requête avec vérification SSL explicite et timeout
+            response = requests.post(
+                endpoint, 
+                headers=headers, 
+                json=data,
+                verify=True,
+                timeout=(5, 30)  # 5s pour la connexion, 30s pour la réponse
+            )
             
             # Vérification de la réponse
             if response.status_code != 200:
-                logger.error(f"Erreur lors de l'exécution de la requête XQL: {response.text}")
+                logger.error(f"Erreur lors de l'exécution de la requête XQL: Code {response.status_code}")
                 return self._simulate_xql_results(query, timeframe)
             
             # Traitement de la réponse
@@ -570,7 +586,7 @@ class CortexClient:
                 return self._simulate_xql_results(query, timeframe)
             
         except Exception as e:
-            logger.error(f"Erreur lors de l'exécution de la requête XQL: {str(e)}", exc_info=True)
+            logger.error(f"Erreur lors de l'exécution de la requête XQL: {type(e).__name__}", exc_info=True)
             return self._simulate_xql_results(query, timeframe)
     
     def _get_xql_results(self, query_id: str, max_retries: int = 10) -> Dict[str, Any]:
@@ -597,7 +613,13 @@ class CortexClient:
         # Tentatives de récupération des résultats
         for attempt in range(max_retries):
             try:
-                response = requests.post(endpoint, headers=headers, json=data)
+                response = requests.post(
+                    endpoint, 
+                    headers=headers, 
+                    json=data,
+                    verify=True,
+                    timeout=(5, 30)  # 5s pour la connexion, 30s pour la réponse
+                )
                 
                 if response.status_code == 200:
                     result = response.json()
@@ -632,11 +654,11 @@ class CortexClient:
                                 }
                             }
                 else:
-                    logger.warning(f"Erreur lors de la récupération des résultats: {response.text}")
+                    logger.warning(f"Erreur lors de la récupération des résultats: Code {response.status_code}")
                     break
                     
             except Exception as e:
-                logger.error(f"Erreur lors de la récupération des résultats: {str(e)}", exc_info=True)
+                logger.error(f"Erreur lors de la récupération des résultats: {type(e).__name__}", exc_info=True)
                 break
         
         # Si on arrive ici, on n'a pas pu récupérer les résultats
@@ -752,7 +774,7 @@ class CortexClient:
             with open(file_path, "rb") as f:
                 file_hash = hashlib.sha256(f.read()).hexdigest()
         except Exception as e:
-            logger.error(f"Erreur lors du calcul du hash: {str(e)}", exc_info=True)
+            logger.error(f"Erreur lors du calcul du hash: {type(e).__name__}", exc_info=True)
         
         # Recherche de données XDR liées au hash
         xdr_data = {}
@@ -762,7 +784,7 @@ class CortexClient:
                 xql_query = f"dataset=xdr_data | filter file_hash = '{file_hash}' | limit 10"
                 xdr_data = self.execute_xql_query(xql_query)
             except Exception as e:
-                logger.error(f"Erreur lors de la requête XQL: {str(e)}", exc_info=True)
+                logger.error(f"Erreur lors de la requête XQL: {type(e).__name__}", exc_info=True)
         
         # Traitement des correspondances YARA
         max_score = 0
@@ -821,263 +843,3 @@ class CortexClient:
         correlation_results["metadata"]["file_hash"] = file_hash
         
         return correlation_results
-    
-    def get_endpoints(self) -> List[Dict[str, Any]]:
-        """
-        Récupère la liste des endpoints depuis Cortex XDR
-        
-        Returns:
-            Liste des endpoints
-        """
-        logger.info("Récupération de la liste des endpoints depuis Cortex XDR")
-        
-        # Vérification de la configuration
-        if not self.api_key or not self.api_key_id:
-            logger.warning("Clés API Cortex XDR non configurées, simulation d'endpoints")
-            return self._simulate_endpoints()
-        
-        try:
-            # Obtention des en-têtes d'authentification
-            headers = self._get_auth_headers()
-            
-            # Endpoint pour la liste des endpoints
-            endpoint = f"{self.base_url}/public_api/v1/endpoints/get_endpoints"
-            
-            # Préparation de la requête
-            data = {
-                "request_data": {
-                    "tenant_id": self.tenant_id,
-                    "filters": [],
-                    "search_from": 0,
-                    "search_to": 100
-                }
-            }
-            
-            # Envoi de la requête
-            response = requests.post(endpoint, headers=headers, json=data)
-            
-            # Vérification de la réponse
-            if response.status_code != 200:
-                logger.error(f"Erreur lors de la récupération des endpoints: {response.text}")
-                return self._simulate_endpoints()
-            
-            # Traitement de la réponse
-            result = response.json()
-            
-            # Formatage des résultats
-            if "reply" in result and "endpoints" in result["reply"]:
-                return result["reply"]["endpoints"]
-            else:
-                logger.warning("Format de réponse inattendu pour la liste des endpoints")
-                return self._simulate_endpoints()
-            
-        except Exception as e:
-            logger.error(f"Erreur lors de la récupération des endpoints: {str(e)}", exc_info=True)
-            return self._simulate_endpoints()
-    
-    def _simulate_endpoints(self) -> List[Dict[str, Any]]:
-        """
-        Simule une liste d'endpoints
-        
-        Returns:
-            Liste simulée d'endpoints
-        """
-        logger.info("Simulation de la liste des endpoints")
-        
-        return [
-            {
-                "endpoint_id": "1",
-                "endpoint_name": "DESKTOP-EXAMPLE",
-                "endpoint_type": "Server",
-                "endpoint_status": "connected",
-                "os_type": "Windows",
-                "ip": "192.168.1.100",
-                "domain": "EXAMPLE",
-                "alias": "Server1",
-                "first_seen": "2025-01-01T00:00:00Z",
-                "last_seen": "2025-05-26T12:00:00Z"
-            },
-            {
-                "endpoint_id": "2",
-                "endpoint_name": "LAPTOP-TEST",
-                "endpoint_type": "Workstation",
-                "endpoint_status": "connected",
-                "os_type": "Windows",
-                "ip": "192.168.1.101",
-                "domain": "EXAMPLE",
-                "alias": "UserLaptop",
-                "first_seen": "2025-01-02T00:00:00Z",
-                "last_seen": "2025-05-26T12:30:00Z"
-            },
-            {
-                "endpoint_id": "3",
-                "endpoint_name": "SERVER-PROD",
-                "endpoint_type": "Server",
-                "endpoint_status": "disconnected",
-                "os_type": "Linux",
-                "ip": "192.168.1.200",
-                "domain": "",
-                "alias": "ProdServer",
-                "first_seen": "2025-01-03T00:00:00Z",
-                "last_seen": "2025-05-25T18:00:00Z"
-            }
-        ]
-    
-    def get_alerts(self, time_frame: str = "last_24_hours", limit: int = 100) -> List[Dict[str, Any]]:
-        """
-        Récupère les alertes depuis Cortex XDR
-        
-        Args:
-            time_frame: Période de temps (last_24_hours, last_7_days, last_30_days)
-            limit: Nombre maximum d'alertes à récupérer
-        
-        Returns:
-            Liste des alertes
-        """
-        logger.info(f"Récupération des alertes depuis Cortex XDR (période: {time_frame})")
-        
-        # Vérification de la configuration
-        if not self.api_key or not self.api_key_id:
-            logger.warning("Clés API Cortex XDR non configurées, simulation d'alertes")
-            return self._simulate_alerts(time_frame, limit)
-        
-        try:
-            # Obtention des en-têtes d'authentification
-            headers = self._get_auth_headers()
-            
-            # Endpoint pour la liste des alertes
-            endpoint = f"{self.base_url}/public_api/v1/alerts/get_alerts_multi_events"
-            
-            # Préparation de la requête
-            data = {
-                "request_data": {
-                    "tenant_id": self.tenant_id,
-                    "filters": [
-                        {
-                            "field": "creation_time",
-                            "operator": "gte",
-                            "value": self._get_time_frame_value(time_frame)
-                        }
-                    ],
-                    "search_from": 0,
-                    "search_to": limit,
-                    "sort": {
-                        "field": "creation_time",
-                        "keyword": "desc"
-                    }
-                }
-            }
-            
-            # Envoi de la requête
-            response = requests.post(endpoint, headers=headers, json=data)
-            
-            # Vérification de la réponse
-            if response.status_code != 200:
-                logger.error(f"Erreur lors de la récupération des alertes: {response.text}")
-                return self._simulate_alerts(time_frame, limit)
-            
-            # Traitement de la réponse
-            result = response.json()
-            
-            # Formatage des résultats
-            if "reply" in result and "alerts" in result["reply"]:
-                return result["reply"]["alerts"]
-            else:
-                logger.warning("Format de réponse inattendu pour la liste des alertes")
-                return self._simulate_alerts(time_frame, limit)
-            
-        except Exception as e:
-            logger.error(f"Erreur lors de la récupération des alertes: {str(e)}", exc_info=True)
-            return self._simulate_alerts(time_frame, limit)
-    
-    def _get_time_frame_value(self, time_frame: str) -> str:
-        """
-        Convertit une période de temps en date ISO
-        
-        Args:
-            time_frame: Période de temps (last_24_hours, last_7_days, last_30_days)
-        
-        Returns:
-            Date ISO correspondant au début de la période
-        """
-        now = datetime.now()
-        
-        if time_frame == "last_7_days":
-            start_time = now - timedelta(days=7)
-        elif time_frame == "last_30_days":
-            start_time = now - timedelta(days=30)
-        else:  # last_24_hours par défaut
-            start_time = now - timedelta(days=1)
-        
-        return start_time.isoformat() + "Z"
-    
-    def _simulate_alerts(self, time_frame: str, limit: int) -> List[Dict[str, Any]]:
-        """
-        Simule une liste d'alertes
-        
-        Args:
-            time_frame: Période de temps
-            limit: Nombre maximum d'alertes
-        
-        Returns:
-            Liste simulée d'alertes
-        """
-        logger.info(f"Simulation de la liste des alertes (période: {time_frame}, limite: {limit})")
-        
-        # Génération d'alertes simulées
-        alerts = []
-        alert_types = [
-            "Malware", "Suspicious Process", "Network Connection", "Fileless Attack",
-            "Ransomware", "Data Exfiltration", "Brute Force", "Lateral Movement"
-        ]
-        
-        # Détermination du nombre d'alertes à générer
-        num_alerts = min(limit, 20)  # Maximum 20 alertes simulées
-        
-        for i in range(num_alerts):
-            # Calcul d'une date aléatoire dans la période
-            days_ago = 0
-            if time_frame == "last_7_days":
-                days_ago = random.randint(0, 7)
-            elif time_frame == "last_30_days":
-                days_ago = random.randint(0, 30)
-            else:  # last_24_hours par défaut
-                days_ago = random.randint(0, 1)
-                
-            alert_time = datetime.now() - timedelta(days=days_ago)
-            
-            # Sélection aléatoire du type d'alerte
-            alert_type = random.choice(alert_types)
-            
-            # Détermination de la sévérité
-            severity_options = ["critical", "high", "medium", "low"]
-            severity_weights = [0.1, 0.2, 0.4, 0.3]  # Pondération pour la distribution
-            severity = random.choices(severity_options, severity_weights)[0]
-            
-            # Création de l'alerte simulée
-            alert = {
-                "alert_id": f"sim-alert-{i+1}",
-                "name": f"{alert_type} Alert",
-                "category": alert_type,
-                "severity": severity,
-                "description": f"Alerte simulée de type {alert_type}",
-                "detection_timestamp": alert_time.isoformat() + "Z",
-                "host": {
-                    "hostname": f"HOST-{random.randint(1, 5)}",
-                    "ip": f"192.168.1.{random.randint(1, 254)}",
-                    "os": random.choice(["Windows", "Linux", "macOS"])
-                },
-                "user": f"user{random.randint(1, 10)}",
-                "action_status": random.choice(["new", "in_progress", "resolved"]),
-                "action_taken": random.choice(["none", "blocked", "isolated"]),
-                "mitre_tactics": [
-                    random.choice(["Initial Access", "Execution", "Persistence", "Privilege Escalation", "Defense Evasion"])
-                ],
-                "mitre_techniques": [
-                    f"T{random.randint(1000, 1999)}"
-                ]
-            }
-            
-            alerts.append(alert)
-        
-        return alerts
