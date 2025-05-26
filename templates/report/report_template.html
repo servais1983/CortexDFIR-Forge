@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rapport d'analyse forensique - CortexDFIR-Forge</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --background-color: #f8f9fa;
+            --text-color: #333;
+            --border-color: #ddd;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--background-color);
+            padding: 0;
+            margin: 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+        
+        header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .report-meta {
+            text-align: right;
+        }
+        
+        h1, h2, h3, h4 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+        
+        h1 {
+            font-size: 28px;
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        h2 {
+            font-size: 24px;
+            margin-top: 30px;
+        }
+        
+        h3 {
+            font-size: 20px;
+            margin-top: 25px;
+        }
+        
+        p {
+            margin-bottom: 15px;
+        }
+        
+        .summary-box {
+            background-color: white;
+            border-left: 4px solid var(--secondary-color);
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .threat-score {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .score-critical {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .score-high {
+            background-color: #e67e22;
+            color: white;
+        }
+        
+        .score-medium {
+            background-color: #f1c40f;
+            color: #333;
+        }
+        
+        .score-low {
+            background-color: #2ecc71;
+            color: white;
+        }
+        
+        .score-info {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        table, th, td {
+            border: 1px solid var(--border-color);
+        }
+        
+        th {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px;
+            text-align: left;
+        }
+        
+        td {
+            padding: 10px;
+            background-color: white;
+        }
+        
+        tr:nth-child(even) td {
+            background-color: #f2f2f2;
+        }
+        
+        .finding {
+            background-color: white;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .finding-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .finding-body {
+            padding: 15px;
+        }
+        
+        .finding-details {
+            margin-top: 10px;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+        
+        .evidence-list {
+            list-style-type: none;
+        }
+        
+        .evidence-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .evidence-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .chart-container {
+            margin: 20px 0;
+            height: 300px;
+        }
+        
+        footer {
+            margin-top: 50px;
+            padding: 20px 0;
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+        }
+        
+        @media print {
+            body {
+                background-color: white;
+            }
+            
+            .container {
+                max-width: 100%;
+                padding: 0 10px;
+            }
+            
+            header, footer {
+                background-color: white;
+                color: var(--primary-color);
+            }
+            
+            .finding {
+                break-inside: avoid;
+            }
+            
+            .finding-header {
+                background-color: #f2f2f2;
+                color: var(--primary-color);
+            }
+            
+            th {
+                background-color: #f2f2f2;
+                color: var(--primary-color);
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">CortexDFIR-Forge</div>
+            <div class="report-meta">
+                <div>Rapport généré le: {{ date_generation }}</div>
+                <div>Référence: {{ reference }}</div>
+            </div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <h1>Rapport d'analyse forensique</h1>
+        
+        <div class="summary-box">
+            <h2>Résumé exécutif</h2>
+            <p>{{ resume_executif }}</p>
+            <p><strong>Score global de menace:</strong> <span class="threat-score score-{{ score_class }}">{{ score_global }}</span></p>
+            <p><strong>Fichiers analysés:</strong> {{ nombre_fichiers }}</p>
+            <p><strong>Menaces détectées:</strong> {{ nombre_menaces }}</p>
+        </div>
+        
+        <h2>Informations générales</h2>
+        <table>
+            <tr>
+                <th>Élément</th>
+                <th>Détail</th>
+            </tr>
+            <tr>
+                <td>Date d'analyse</td>
+                <td>{{ date_analyse }}</td>
+            </tr>
+            <tr>
+                <td>Durée d'analyse</td>
+                <td>{{ duree_analyse }}</td>
+            </tr>
+            <tr>
+                <td>Version de l'outil</td>
+                <td>{{ version_outil }}</td>
+            </tr>
+            <tr>
+                <td>Règles YARA utilisées</td>
+                <td>{{ nombre_regles_yara }}</td>
+            </tr>
+        </table>
+        
+        <h2>Fichiers analysés</h2>
+        <table>
+            <tr>
+                <th>Nom du fichier</th>
+                <th>Type</th>
+                <th>Taille</th>
+                <th>Hash SHA-256</th>
+                <th>Statut</th>
+            </tr>
+            {% for fichier in fichiers %}
+            <tr>
+                <td>{{ fichier.nom }}</td>
+                <td>{{ fichier.type }}</td>
+                <td>{{ fichier.taille }}</td>
+                <td>{{ fichier.hash }}</td>
+                <td>{{ fichier.statut }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        
+        <h2>Résultats de l'analyse</h2>
+        
+        <div class="chart-container">
+            <!-- Graphique de répartition des menaces -->
+            <canvas id="threatChart"></canvas>
+        </div>
+        
+        <h3>Détections par catégorie</h3>
+        <table>
+            <tr>
+                <th>Catégorie</th>
+                <th>Nombre de détections</th>
+                <th>Niveau de risque</th>
+            </tr>
+            {% for categorie in categories %}
+            <tr>
+                <td>{{ categorie.nom }}</td>
+                <td>{{ categorie.nombre }}</td>
+                <td><span class="threat-score score-{{ categorie.risque_class }}">{{ categorie.risque }}</span></td>
+            </tr>
+            {% endfor %}
+        </table>
+        
+        <h3>Détails des menaces détectées</h3>
+        
+        {% for menace in menaces %}
+        <div class="finding">
+            <div class="finding-header">
+                <div>{{ menace.nom }}</div>
+                <div><span class="threat-score score-{{ menace.score_class }}">{{ menace.score }}</span></div>
+            </div>
+            <div class="finding-body">
+                <p><strong>Catégorie:</strong> {{ menace.categorie }}</p>
+                <p><strong>Description:</strong> {{ menace.description }}</p>
+                <p><strong>Fichier concerné:</strong> {{ menace.fichier }}</p>
+                <p><strong>Règle YARA:</strong> {{ menace.regle_yara }}</p>
+                
+                <h4>Preuves</h4>
+                <ul class="evidence-list">
+                    {% for preuve in menace.preuves %}
+                    <li>{{ preuve }}</li>
+                    {% endfor %}
+                </ul>
+                
+                <h4>Détails techniques</h4>
+                <div class="finding-details">{{ menace.details }}</div>
+                
+                <h4>Recommandations</h4>
+                <p>{{ menace.recommandations }}</p>
+            </div>
+        </div>
+        {% endfor %}
+        
+        <h2>Indicateurs de compromission (IoCs)</h2>
+        <table>
+            <tr>
+                <th>Type</th>
+                <th>Valeur</th>
+                <th>Description</th>
+            </tr>
+            {% for ioc in iocs %}
+            <tr>
+                <td>{{ ioc.type }}</td>
+                <td>{{ ioc.valeur }}</td>
+                <td>{{ ioc.description }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        
+        <h2>Recommandations générales</h2>
+        <div class="summary-box">
+            <p>{{ recommandations_generales }}</p>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <p>Rapport généré par CortexDFIR-Forge - © {{ annee_courante }}</p>
+        </div>
+    </footer>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Initialisation des graphiques
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('threatChart').getContext('2d');
+            const threatChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: {{ categories_noms|safe }},
+                    datasets: [{
+                        data: {{ categories_nombres|safe }},
+                        backgroundColor: [
+                            '#e74c3c',
+                            '#e67e22',
+                            '#f1c40f',
+                            '#2ecc71',
+                            '#3498db',
+                            '#9b59b6'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Répartition des menaces par catégorie'
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
