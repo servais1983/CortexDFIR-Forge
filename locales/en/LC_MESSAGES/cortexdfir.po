@@ -1,0 +1,540 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: CortexDFIR-Forge 1.0\n"
+"POT-Creation-Date: 2025-05-26 14:20+0000\n"
+"PO-Revision-Date: 2025-05-26 14:20+0000\n"
+"Last-Translator: CortexDFIR-Forge Team\n"
+"Language-Team: English\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Analysis"
+msgstr "Analysis"
+
+msgid "XQL Queries"
+msgstr "XQL Queries"
+
+msgid "Incidents & Alerts"
+msgstr "Incidents & Alerts"
+
+msgid "Configuration"
+msgstr "Configuration"
+
+msgid "File Selection"
+msgstr "File Selection"
+
+msgid "Select Files"
+msgstr "Select Files"
+
+msgid "Select Directory"
+msgstr "Select Directory"
+
+msgid "Clear Selection"
+msgstr "Clear Selection"
+
+msgid "Selected Files:"
+msgstr "Selected Files:"
+
+msgid "Analysis Options"
+msgstr "Analysis Options"
+
+msgid "Use YARA Rules"
+msgstr "Use YARA Rules"
+
+msgid "Analyze with Cortex XDR"
+msgstr "Analyze with Cortex XDR"
+
+msgid "Detect Ransomware"
+msgstr "Detect Ransomware"
+
+msgid "Detect Backdoors"
+msgstr "Detect Backdoors"
+
+msgid "Detect Phishing Attempts"
+msgstr "Detect Phishing Attempts"
+
+msgid "Correlate with Cortex XDR"
+msgstr "Correlate with Cortex XDR"
+
+msgid "Start Analysis"
+msgstr "Start Analysis"
+
+msgid "Stop Analysis"
+msgstr "Stop Analysis"
+
+msgid "Progress"
+msgstr "Progress"
+
+msgid "Waiting..."
+msgstr "Waiting..."
+
+msgid "Results"
+msgstr "Results"
+
+msgid "Summary"
+msgstr "Summary"
+
+msgid "Threats"
+msgstr "Threats"
+
+msgid "Indicators"
+msgstr "Indicators"
+
+msgid "Details"
+msgstr "Details"
+
+msgid "Generate HTML Report"
+msgstr "Generate HTML Report"
+
+msgid "Export to CSV"
+msgstr "Export to CSV"
+
+msgid "Type"
+msgstr "Type"
+
+msgid "Name"
+msgstr "Name"
+
+msgid "Severity"
+msgstr "Severity"
+
+msgid "Score"
+msgstr "Score"
+
+msgid "Description"
+msgstr "Description"
+
+msgid "Value"
+msgstr "Value"
+
+msgid "Confidence"
+msgstr "Confidence"
+
+msgid "XQL Query"
+msgstr "XQL Query"
+
+msgid "Enter your XQL query here..."
+msgstr "Enter your XQL query here..."
+
+msgid "Timeframe:"
+msgstr "Timeframe:"
+
+msgid "Last 24 hours"
+msgstr "Last 24 hours"
+
+msgid "Last 7 days"
+msgstr "Last 7 days"
+
+msgid "Last 30 days"
+msgstr "Last 30 days"
+
+msgid "Execute Query"
+msgstr "Execute Query"
+
+msgid "Export Results"
+msgstr "Export Results"
+
+msgid "Query Examples"
+msgstr "Query Examples"
+
+msgid "Suspicious PowerShell Processes"
+msgstr "Suspicious PowerShell Processes"
+
+msgid "Network Connections to Suspicious Domains"
+msgstr "Network Connections to Suspicious Domains"
+
+msgid "Files Created in Sensitive Folders"
+msgstr "Files Created in Sensitive Folders"
+
+msgid "Executables Launched from Temporary Folders"
+msgstr "Executables Launched from Temporary Folders"
+
+msgid "User Account Activity Outside Normal Hours"
+msgstr "User Account Activity Outside Normal Hours"
+
+msgid "Alerts"
+msgstr "Alerts"
+
+msgid "Endpoints"
+msgstr "Endpoints"
+
+msgid "Limit:"
+msgstr "Limit:"
+
+msgid "Get Alerts"
+msgstr "Get Alerts"
+
+msgid "Get Endpoints"
+msgstr "Get Endpoints"
+
+msgid "ID"
+msgstr "ID"
+
+msgid "Category"
+msgstr "Category"
+
+msgid "Host"
+msgstr "Host"
+
+msgid "Detection Date"
+msgstr "Detection Date"
+
+msgid "Status"
+msgstr "Status"
+
+msgid "OS"
+msgstr "OS"
+
+msgid "IP"
+msgstr "IP"
+
+msgid "Cortex XDR Configuration"
+msgstr "Cortex XDR Configuration"
+
+msgid "Base URL:"
+msgstr "Base URL:"
+
+msgid "API Key:"
+msgstr "API Key:"
+
+msgid "API Key ID:"
+msgstr "API Key ID:"
+
+msgid "Tenant ID:"
+msgstr "Tenant ID:"
+
+msgid "Use Advanced API"
+msgstr "Use Advanced API"
+
+msgid "Test Connection"
+msgstr "Test Connection"
+
+msgid "Save"
+msgstr "Save"
+
+msgid "YARA Configuration"
+msgstr "YARA Configuration"
+
+msgid "Rules Directory:"
+msgstr "Rules Directory:"
+
+msgid "Browse"
+msgstr "Browse"
+
+msgid "Reload Rules"
+msgstr "Reload Rules"
+
+msgid "User Interface"
+msgstr "User Interface"
+
+msgid "Language:"
+msgstr "Language:"
+
+msgid "Theme:"
+msgstr "Theme:"
+
+msgid "Light"
+msgstr "Light"
+
+msgid "Dark"
+msgstr "Dark"
+
+msgid "System"
+msgstr "System"
+
+msgid "Save All Configurations"
+msgstr "Save All Configurations"
+
+msgid "No file selected"
+msgstr "No file selected"
+
+msgid "Please select at least one file to analyze."
+msgstr "Please select at least one file to analyze."
+
+msgid "Analysis initialization..."
+msgstr "Analysis initialization..."
+
+msgid "Analysis stopped by user"
+msgstr "Analysis stopped by user"
+
+msgid "Analysis Error"
+msgstr "Analysis Error"
+
+msgid "No results"
+msgstr "No results"
+
+msgid "No analysis results available to generate a report."
+msgstr "No analysis results available to generate a report."
+
+msgid "Report Generated"
+msgstr "Report Generated"
+
+msgid "The report has been successfully generated:"
+msgstr "The report has been successfully generated:"
+
+msgid "Open Report"
+msgstr "Open Report"
+
+msgid "Do you want to open the report in your browser?"
+msgstr "Do you want to open the report in your browser?"
+
+msgid "Error"
+msgstr "Error"
+
+msgid "Error generating report:"
+msgstr "Error generating report:"
+
+msgid "No analysis results available to export."
+msgstr "No analysis results available to export."
+
+msgid "Export Successful"
+msgstr "Export Successful"
+
+msgid "The results have been successfully exported:"
+msgstr "The results have been successfully exported:"
+
+msgid "Error exporting results:"
+msgstr "Error exporting results:"
+
+msgid "Empty Query"
+msgstr "Empty Query"
+
+msgid "Please enter an XQL query."
+msgstr "Please enter an XQL query."
+
+msgid "Executing XQL query..."
+msgstr "Executing XQL query..."
+
+msgid "XQL query completed"
+msgstr "XQL query completed"
+
+msgid "XQL Query Error"
+msgstr "XQL Query Error"
+
+msgid "Error executing XQL query"
+msgstr "Error executing XQL query"
+
+msgid "No XQL query results available to export."
+msgstr "No XQL query results available to export."
+
+msgid "No results to export."
+msgstr "No results to export."
+
+msgid "The XQL results have been successfully exported:"
+msgstr "The XQL results have been successfully exported:"
+
+msgid "Error exporting XQL results:"
+msgstr "Error exporting XQL results:"
+
+msgid "Retrieving Cortex XDR alerts..."
+msgstr "Retrieving Cortex XDR alerts..."
+
+msgid "alerts retrieved"
+msgstr "alerts retrieved"
+
+msgid "Alert Retrieval Error"
+msgstr "Alert Retrieval Error"
+
+msgid "Error retrieving alerts"
+msgstr "Error retrieving alerts"
+
+msgid "Retrieving Cortex XDR endpoints..."
+msgstr "Retrieving Cortex XDR endpoints..."
+
+msgid "endpoints retrieved"
+msgstr "endpoints retrieved"
+
+msgid "Endpoint Retrieval Error"
+msgstr "Endpoint Retrieval Error"
+
+msgid "Error retrieving endpoints"
+msgstr "Error retrieving endpoints"
+
+msgid "Incomplete Parameters"
+msgstr "Incomplete Parameters"
+
+msgid "Please fill in at least the Base URL, API Key and API Key ID."
+msgstr "Please fill in at least the Base URL, API Key and API Key ID."
+
+msgid "Testing Cortex XDR connection..."
+msgstr "Testing Cortex XDR connection..."
+
+msgid "Connection Successful"
+msgstr "Connection Successful"
+
+msgid "Connection to Cortex XDR successful."
+msgstr "Connection to Cortex XDR successful."
+
+msgid "Partial Connection"
+msgstr "Partial Connection"
+
+msgid "Connection to Cortex XDR established, but no endpoints retrieved."
+msgstr "Connection to Cortex XDR established, but no endpoints retrieved."
+
+msgid "Connection Error"
+msgstr "Connection Error"
+
+msgid "Error connecting to Cortex XDR:"
+msgstr "Error connecting to Cortex XDR:"
+
+msgid "Connection test completed"
+msgstr "Connection test completed"
+
+msgid "Configuration Saved"
+msgstr "Configuration Saved"
+
+msgid "The Cortex XDR configuration has been successfully saved."
+msgstr "The Cortex XDR configuration has been successfully saved."
+
+msgid "Directory Not Specified"
+msgstr "Directory Not Specified"
+
+msgid "Please specify the YARA rules directory."
+msgstr "Please specify the YARA rules directory."
+
+msgid "Rules Reloaded"
+msgstr "Rules Reloaded"
+
+msgid "The YARA rules have been successfully reloaded."
+msgstr "The YARA rules have been successfully reloaded."
+
+msgid "Error reloading YARA rules:"
+msgstr "Error reloading YARA rules:"
+
+msgid "All Configurations Saved"
+msgstr "All Configurations Saved"
+
+msgid "All configurations have been successfully saved."
+msgstr "All configurations have been successfully saved."
+
+msgid "Analysis Summary"
+msgstr "Analysis Summary"
+
+msgid "Files analyzed:"
+msgstr "Files analyzed:"
+
+msgid "Threats detected:"
+msgstr "Threats detected:"
+
+msgid "Indicators identified:"
+msgstr "Indicators identified:"
+
+msgid "Global score:"
+msgstr "Global score:"
+
+msgid "Critical"
+msgstr "Critical"
+
+msgid "High"
+msgstr "High"
+
+msgid "Medium"
+msgstr "Medium"
+
+msgid "Low"
+msgstr "Low"
+
+msgid "Info"
+msgstr "Info"
+
+msgid "Threat Categories"
+msgstr "Threat Categories"
+
+msgid "Unknown Threat"
+msgstr "Unknown Threat"
+
+msgid "Technical Details"
+msgstr "Technical Details"
+
+msgid "YARA Matches"
+msgstr "YARA Matches"
+
+msgid "Cortex XDR Correlations"
+msgstr "Cortex XDR Correlations"
+
+msgid "Ready"
+msgstr "Ready"
+
+msgid "French"
+msgstr "French"
+
+msgid "English"
+msgstr "English"
+
+msgid "connected"
+msgstr "connected"
+
+msgid "disconnected"
+msgstr "disconnected"
+
+msgid "critical"
+msgstr "critical"
+
+msgid "high"
+msgstr "high"
+
+msgid "medium"
+msgstr "medium"
+
+msgid "low"
+msgstr "low"
+
+msgid "malware"
+msgstr "malware"
+
+msgid "ransomware"
+msgstr "ransomware"
+
+msgid "backdoor"
+msgstr "backdoor"
+
+msgid "phishing"
+msgstr "phishing"
+
+msgid "suspicious"
+msgstr "suspicious"
+
+msgid "network"
+msgstr "network"
+
+msgid "file"
+msgstr "file"
+
+msgid "process"
+msgstr "process"
+
+msgid "registry"
+msgstr "registry"
+
+msgid "authentication"
+msgstr "authentication"
+
+msgid "Server"
+msgstr "Server"
+
+msgid "Workstation"
+msgstr "Workstation"
+
+msgid "Windows"
+msgstr "Windows"
+
+msgid "Linux"
+msgstr "Linux"
+
+msgid "macOS"
+msgstr "macOS"
+
+msgid "Android"
+msgstr "Android"
+
+msgid "iOS"
+msgstr "iOS"
+
+msgid "Yes"
+msgstr "Yes"
+
+msgid "No"
+msgstr "No"

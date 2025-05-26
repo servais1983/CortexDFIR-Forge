@@ -1,36 +1,38 @@
-# Liste des tâches pour le projet CortexDFIR-Forge
+# Plan d'amélioration de CortexDFIR-Forge
 
-## Création du dépôt GitHub
-- [x] Créer le dossier principal du projet
-- [x] Créer la structure de dossiers (src, rules, templates, static)
-- [x] Créer le fichier README.md
-- [x] Créer le fichier LICENSE
-- [x] Créer le fichier requirements.txt
-- [x] Créer les fichiers d'installation (.bat)
-- [x] Initialiser le dépôt Git
-- [x] Configurer Git avec les informations nécessaires
-- [x] Effectuer le premier commit
-- [x] Créer le dépôt sur GitHub
-- [x] Pousser le code vers GitHub
+## Intégration Cortex XDR (Priorité Haute)
+- [ ] Améliorer l'authentification et la gestion des API keys
+- [ ] Implémenter l'intégration complète avec l'API Cortex XDR v2
+- [ ] Ajouter le support pour les requêtes XQL (XDR Query Language)
+- [ ] Développer des connecteurs pour l'extraction de données Cortex
+- [ ] Créer des workflows automatisés pour l'analyse d'incidents
+- [ ] Implémenter la corrélation entre les résultats YARA et Cortex XDR
 
-## Conception de la solution industrielle pour Cortex en DFIR
-- [x] Analyser les meilleures pratiques DFIR professionnelles
-- [x] Concevoir l'architecture de la solution
-- [x] Développer les modules principaux
-- [x] Implémenter l'intégration avec Cortex XDR
-- [x] Créer les règles YARA
-- [x] Développer le système de scoring
-- [x] Implémenter la génération de rapports HTML
-- [x] Tester la solution
+## Documentation et README (Priorité Haute)
+- [ ] Enrichir le README principal avec des exemples d'utilisation
+- [ ] Créer des diagrammes d'architecture (UML, flux de données)
+- [ ] Développer un guide d'installation détaillé
+- [ ] Rédiger un guide d'utilisation avec captures d'écran
+- [ ] Documenter l'API et les interfaces de programmation
+- [ ] Ajouter des exemples de cas d'usage réels
 
-## Préparation de la présentation professionnelle
-- [ ] Créer une présentation du projet
-- [ ] Documenter l'architecture
-- [ ] Préparer des exemples d'utilisation
-- [ ] Créer des captures d'écran de l'interface
-- [ ] Finaliser la présentation
+## Tests automatisés et CI (Priorité Moyenne)
+- [ ] Implémenter des tests unitaires pour les composants principaux
+- [ ] Ajouter des tests d'intégration pour valider le fonctionnement global
+- [ ] Créer des jeux de données de test pour valider les règles YARA
+- [ ] Configurer GitHub Actions pour les tests automatiques
+- [ ] Mettre en place un système de versionnage sémantique
 
-## Validation et livraison
-- [ ] Vérifier tous les livrables
-- [ ] Transmettre les livrables à l'utilisateur
-- [ ] Recueillir les retours
+## Interface utilisateur et Dashboard (Priorité Moyenne)
+- [ ] Créer un tableau de bord (dashboard) avec visualisations avancées
+- [ ] Implémenter un système de filtres plus sophistiqué pour les résultats
+- [ ] Améliorer l'expérience mobile
+- [ ] Ajouter des graphiques interactifs pour l'analyse des menaces
+- [ ] Développer une vue timeline des événements
+
+## Sécurité et Internationalisation (Priorité Basse)
+- [ ] Ajouter un système de validation des règles YARA avant intégration
+- [ ] Implémenter une vérification de l'intégrité des fichiers analysés
+- [ ] Renforcer la sécurité des données sensibles
+- [ ] Préparer le projet pour la traduction (i18n)
+- [ ] Supporter plusieurs langues dans l'interface et les rapports
