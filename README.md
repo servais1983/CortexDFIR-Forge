@@ -1,4 +1,4 @@
-![CortexDFIR-Forge Logo](https://github.com/user-attachments/assets/934cca7c-2f04-442c-8cca-f8455004efb5)
+![CortexDFIR-Forge Logo](cortex.png)
 
 # CortexDFIR-Forge
 
