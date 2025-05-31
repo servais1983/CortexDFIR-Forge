@@ -1,0 +1,102 @@
+# Configuration Bandit pour l'analyse de sécurité du code
+# Fichier: .bandit
+
+[bandit]
+# Liste des tests à exclure (par ID de test)
+skips = B101,B601
+
+# Liste des tests à inclure (laisser vide pour tous)
+tests = 
+
+# Répertoires à exclure du scan
+exclude_dirs = [
+    "tests",
+    "venv",
+    ".venv", 
+    "env",
+    ".env",
+    "build",
+    "dist",
+    ".git",
+    "__pycache__",
+    ".pytest_cache"
+]
+
+# Niveau de confiance minimum (HIGH, MEDIUM, LOW)
+confidence = MEDIUM
+
+# Niveau de sévérité minimum (HIGH, MEDIUM, LOW)
+severity = LOW
+
+# Format de sortie (json, csv, txt, html, xml)
+format = json
+
+# Fichier de sortie
+output = bandit-report.json
+
+# Nombre de lignes de contexte à afficher
+context_lines = 3
+
+# Activer le mode verbeux
+verbose = false
+
+# Activer le mode silencieux
+quiet = false
+
+# Tests spécifiques par fichier ou répertoire
+[bandit.any_other_function_with_shell_equals_true]
+# Ignorer les avertissements shell=True pour certains cas légitimes
+shell = false
+
+[bandit.blacklist]
+# Configuration spécifique pour les imports blacklistés
+check_typed_list = true
+
+[bandit.hardcoded_password_string]
+# Configuration pour la détection de mots de passe hardcodés
+word_list = [
+    "password",
+    "pass",
+    "passwd", 
+    "pwd",
+    "secret",
+    "token",
+    "api_key",
+    "private_key"
+]
+
+[bandit.hardcoded_password_funcarg]
+# Arguments de fonction à surveiller pour les mots de passe
+check_typed_list = true
+
+[bandit.hardcoded_password_default]
+# Valeurs par défaut à surveiller
+check_typed_list = true
+
+[bandit.request_without_timeout]
+# Vérifier les requêtes sans timeout
+check_httpx_calls = true
+
+[bandit.ssl_with_bad_version]
+# Vérifier les versions SSL/TLS inappropriées
+check_typed_list = true
+
+[bandit.ssl_with_bad_defaults]
+# Vérifier les configurations SSL par défaut
+check_typed_list = true
+
+[bandit.subprocess_popen_with_shell_equals_true]
+# Surveiller l'usage de shell=True dans subprocess
+check_typed_list = true
+
+[bandit.start_process_with_partial_path]
+# Surveiller les chemins partiels dans les processus
+check_typed_list = true
+
+[bandit.try_except_pass]
+# Surveiller les blocs try/except vides
+check_typed_list = true
+
+[bandit.assert_used]
+# Surveiller l'usage d'assert en production
+check_typed_list = true
