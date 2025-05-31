@@ -1,0 +1,146 @@
+# Dépendances requises pour CortexDFIR-Forge - Version mise à jour avec sécurité
+
+# ============================================================================
+# DÉPENDANCES PRINCIPALES
+# ============================================================================
+
+# Interface graphique
+PyQt5==5.15.10  # Mise à jour de sécurité
+
+# Requêtes HTTP
+requests==2.31.0
+urllib3>=1.26.17  # Sécurité CVE-2023-45803
+
+# Configuration et fichiers
+pyyaml==6.0.2  # Mise à jour de sécurité
+python-dotenv==1.0.1
+
+# Analyse de fichiers et YARA
+yara-python==4.5.1  # Mise à jour majeure
+python-magic==0.4.27
+
+# Système et processus
+psutil==5.9.8  # Mise à jour de sécurité
+
+# Interface utilisateur en ligne de commande
+tqdm==4.66.4  # Mise à jour
+colorama==0.4.6
+rich==13.7.1  # Mise à jour majeure
+tabulate==0.9.0
+
+# Cryptographie et sécurité
+cryptography>=41.0.8  # Mise à jour critique de sécurité
+pycryptodome==3.20.0  # Alternative plus sécurisée
+
+# ============================================================================
+# DÉPENDANCES POUR L'ANALYSE FORENSIQUE
+# ============================================================================
+
+# Volatility Framework pour l'analyse mémoire
+volatility3==2.7.0  # Mise à jour majeure
+
+# Analyse de disques virtuels
+pyVMDK==0.2.1
+pytsk3==20231204  # Mise à jour
+
+# Formats de fichiers Windows
+libevtx-python==20231118  # Mise à jour
+libscca-python==20231212  # Mise à jour
+
+# Système de fichiers avancé
+dfvfs>=20231204  # Mise à jour
+
+# ============================================================================
+# GÉNÉRATION DE RAPPORTS
+# ============================================================================
+
+# Templates et rendu HTML
+jinja2>=3.1.4  # Sécurité CVE-2024-22195
+markupsafe>=2.1.5  # Dépendance sécurisée de Jinja2
+
+# Conversion markdown et PDF
+markdown==3.6  # Mise à jour
+weasyprint==61.2  # Mise à jour majeure
+pygments>=2.17.2  # Sécurité
+
+# ============================================================================
+# INTÉGRATION CORTEX XDR
+# ============================================================================
+
+# Client API Cortex XDR
+pycortexapi==1.2.0  # Version mise à jour (remplace cortex-xdr-api-client)
+# Note: cortex-xdr-api-client==1.0.0 remplacé par une version plus récente
+
+# ============================================================================
+# OUTILS DE SÉCURITÉ ET AUDIT
+# ============================================================================
+
+# Audit de sécurité des dépendances
+safety==3.2.7  # Nouvelle version
+pip-audit==2.7.3  # Outil moderne d'audit
+
+# Analyse statique de sécurité
+bandit[toml]==1.7.9  # Mise à jour avec support TOML
+
+# ============================================================================
+# DÉVELOPPEMENT ET TESTS (optionnel en production)
+# ============================================================================
+
+# Framework de tests
+pytest>=8.3.3
+pytest-cov>=5.0.0
+pytest-mock>=3.14.0
+pytest-xdist>=3.6.0  # Tests parallèles
+
+# Qualité de code
+flake8>=7.1.1
+pylint>=3.2.7
+black>=24.8.0
+isort>=5.13.2
+mypy>=1.11.2
+
+# Coverage
+coverage[toml]>=7.6.1
+
+# ============================================================================
+# OUTILS OPTIONNELS POUR LA PRODUCTION
+# ============================================================================
+
+# Monitoring et logging
+sentry-sdk[logging]>=2.14.0  # Monitoring d'erreurs
+structlog>=24.4.0  # Logging structuré
+
+# Configuration avancée
+dynaconf>=3.2.6  # Gestion configuration avancée
+
+# ============================================================================
+# CONTRAINTES DE SÉCURITÉ
+# ============================================================================
+
+# Versions minimales pour la sécurité
+certifi>=2024.8.30  # Certificats SSL mis à jour
+setuptools>=75.1.0  # Sécurité packaging
+wheel>=0.44.0  # Build sécurisé
+
+# Dépendances de cryptographie
+cffi>=1.17.1  # Mise à jour de sécurité
+pycparser>=2.22  # Parsing C sécurisé
+
+# ============================================================================
+# NOTES DE MIGRATION
+# ============================================================================
+
+# Changements majeurs :
+# - PyQt5 5.15.9 -> 5.15.10 (correctifs de sécurité)
+# - yara-python 4.3.1 -> 4.5.1 (améliorations majeures)
+# - volatility3 2.4.1 -> 2.7.0 (mise à jour majeure)
+# - rich 13.5.2 -> 13.7.1 (améliorations UI)
+# - weasyprint 60.1 -> 61.2 (mise à jour majeure)
+# - Ajout d'outils de sécurité modernes (pip-audit, bandit[toml])
+# - Remplacement cortex-xdr-api-client par pycortexapi (plus récent)
+
+# Pour la migration :
+# 1. Tester en environnement de développement
+# 2. Vérifier les tests unitaires
+# 3. Valider l'intégration Cortex XDR
+# 4. Tester la génération de rapports
