@@ -1,0 +1,407 @@
+# Docker Compose pour la production CortexDFIR-Forge
+version: '3.8'
+
+services:
+  # ============================================================================
+  # SERVICE PRINCIPAL - CortexDFIR-Forge
+  # ============================================================================
+  cortexdfir-forge:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    image: cortexdfir-forge:production
+    container_name: cortexdfir-forge-prod
+    restart: unless-stopped
+    
+    environment:
+      - ENV=production
+      - LOG_LEVEL=INFO
+      - WORKERS=4
+      - TIMEOUT=300
+      - REDIS_URL=redis://redis:6379/0
+      - REDIS_PASSWORD_FILE=/run/secrets/redis_password
+      - CORTEX_API_KEY_FILE=/run/secrets/cortex_api_key
+      - CORTEX_API_KEY_ID_FILE=/run/secrets/cortex_api_key_id
+      - SENTRY_DSN_FILE=/run/secrets/sentry_dsn
+      
+    volumes:
+      # Données persistantes
+      - cortex_data:/app/data
+      - cortex_reports:/app/reports
+      - cortex_logs:/var/log/cortexdfir-forge
+      
+      # Configuration en lecture seule
+      - ./config:/app/config:ro
+      - ./rules:/app/rules:ro
+      
+      # Timezone
+      - /etc/localtime:/etc/localtime:ro
+      
+    ports:
+      - "127.0.0.1:8000:8000"
+      - "127.0.0.1:9090:9090"  # Métriques Prometheus
+      
+    networks:
+      - cortex-internal
+      - cortex-external
+      
+    secrets:
+      - cortex_api_key
+      - cortex_api_key_id
+      - redis_password
+      - sentry_dsn
+      
+    depends_on:
+      redis:
+        condition: service_healthy
+      prometheus:
+        condition: service_started
+        
+    deploy:
+      resources:
+        limits:
+          memory: 16G
+          cpus: '6.0'
+        reservations:
+          memory: 8G
+          cpus: '4.0'
+      restart_policy:
+        condition: on-failure
+        delay: 30s
+        max_attempts: 3
+        window: 120s
+        
+    healthcheck:
+      test: ["CMD", "python", "src/utils/health_check.py"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+      
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+
+  # ============================================================================
+  # REVERSE PROXY & LOAD BALANCER - Nginx
+  # ============================================================================
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: cortexdfir-nginx
+    restart: unless-stopped
+    
+    ports:
+      - "443:443"
+      - "80:80"
+      
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - nginx_logs:/var/log/nginx
+      - cortex_static:/app/static:ro
+      
+    networks:
+      - cortex-external
+      
+    depends_on:
+      - cortexdfir-forge
+      
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '1.0'
+        reservations:
+          memory: 256M
+          cpus: '0.5'
+          
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+
+  # ============================================================================
+  # CACHE & SESSION STORE - Redis
+  # ============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: cortexdfir-redis
+    restart: unless-stopped
+    
+    command: >
+      redis-server 
+      --appendonly yes 
+      --requirepass-file /run/secrets/redis_password
+      --maxmemory 2gb
+      --maxmemory-policy allkeys-lru
+      --save 900 1
+      --save 300 10
+      --save 60 10000
+      
+    volumes:
+      - redis_data:/data
+      - ./redis/redis.conf:/etc/redis/redis.conf:ro
+      
+    networks:
+      - cortex-internal
+      
+    secrets:
+      - redis_password
+      
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+          
+    healthcheck:
+      test: ["CMD", "redis-cli", "--no-auth-warning", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+  # ============================================================================
+  # MONITORING - Prometheus
+  # ============================================================================
+  prometheus:
+    image: prom/prometheus:v2.47.0
+    container_name: cortexdfir-prometheus
+    restart: unless-stopped
+    
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=30d'
+      - '--storage.tsdb.retention.size=10GB'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+      
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/rules:/etc/prometheus/rules:ro
+      - prometheus_data:/prometheus
+      
+    ports:
+      - "127.0.0.1:9090:9090"
+      
+    networks:
+      - cortex-internal
+      
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: '2.0'
+        reservations:
+          memory: 2G
+          cpus: '1.0'
+
+  # ============================================================================
+  # VISUALISATION - Grafana
+  # ============================================================================
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: cortexdfir-grafana
+    restart: unless-stopped
+    
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD_FILE=/run/secrets/grafana_password
+      - GF_SECURITY_SECRET_KEY_FILE=/run/secrets/grafana_secret_key
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource,grafana-piechart-panel
+      - GF_ANALYTICS_REPORTING_ENABLED=false
+      - GF_ANALYTICS_CHECK_FOR_UPDATES=false
+      - GF_SECURITY_DISABLE_GRAVATAR=true
+      - GF_SNAPSHOTS_EXTERNAL_ENABLED=false
+      - GF_SECURITY_COOKIE_SECURE=true
+      - GF_SECURITY_COOKIE_SAMESITE=strict
+      
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      
+    ports:
+      - "127.0.0.1:3000:3000"
+      
+    networks:
+      - cortex-internal
+      
+    secrets:
+      - grafana_password
+      - grafana_secret_key
+      
+    depends_on:
+      - prometheus
+      
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+
+  # ============================================================================
+  # EXPORTEUR DE MÉTRIQUES - Node Exporter
+  # ============================================================================
+  node-exporter:
+    image: prom/node-exporter:v1.6.1
+    container_name: cortexdfir-node-exporter
+    restart: unless-stopped
+    
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+      
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+      
+    ports:
+      - "127.0.0.1:9100:9100"
+      
+    networks:
+      - cortex-internal
+      
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+        reservations:
+          memory: 128M
+          cpus: '0.25'
+
+  # ============================================================================
+  # AGRÉGATION DE LOGS - Fluentd (optionnel)
+  # ============================================================================
+  fluentd:
+    image: fluentd:v1.16-debian-1
+    container_name: cortexdfir-fluentd
+    restart: unless-stopped
+    
+    volumes:
+      - ./fluentd/fluent.conf:/fluentd/etc/fluent.conf:ro
+      - cortex_logs:/var/log/cortexdfir-forge:ro
+      - nginx_logs:/var/log/nginx:ro
+      
+    ports:
+      - "127.0.0.1:24224:24224"
+      - "127.0.0.1:24224:24224/udp"
+      
+    networks:
+      - cortex-internal
+      
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+
+# ==============================================================================
+# RÉSEAUX
+# ==============================================================================
+networks:
+  cortex-internal:
+    driver: bridge
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+          
+  cortex-external:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/24
+
+# ==============================================================================
+# VOLUMES PERSISTANTS
+# ==============================================================================
+volumes:
+  cortex_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/cortexdfir-forge/data
+      
+  cortex_reports:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/cortexdfir-forge/reports
+      
+  cortex_logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /var/log/cortexdfir-forge
+      
+  cortex_static:
+    driver: local
+    
+  redis_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/cortexdfir-forge/redis
+      
+  prometheus_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/cortexdfir-forge/prometheus
+      
+  grafana_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/cortexdfir-forge/grafana
+      
+  nginx_logs:
+    driver: local
+
+# ==============================================================================
+# SECRETS
+# ==============================================================================
+secrets:
+  cortex_api_key:
+    external: true
+    
+  cortex_api_key_id:
+    external: true
+    
+  redis_password:
+    external: true
+    
+  grafana_password:
+    external: true
+    
+  grafana_secret_key:
+    external: true
+    
+  sentry_dsn:
+    external: true
