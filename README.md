@@ -91,12 +91,16 @@ chmod +x deploy.sh
 
 ```bash
 # Environnement virtuel Python
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-# venv\Scripts\activate     # Windows
+python -m venv .venv
+source .venv/bin/activate  # Linux/Mac
+# .venv\Scripts\activate     # Windows
 
-# Installation des dépendances sécurisées
+# Installation des dépendances de base
 pip install -r requirements.txt
+
+# Installation des outils de développement et yara-python
+# Sur Windows, exécutez :
+.\setup.bat
 
 # Configuration
 cp config/config.example.json config/config.json

@@ -1,36 +1,33 @@
-# Dépendances requises pour CortexDFIR-Forge
-
-# Dépendances principales
+# Dépendances de base
 PyQt5==5.15.9
 requests==2.31.0
 pyyaml==6.0.1
-yara-python==4.3.1
-python-magic==0.4.27
+python-dotenv==1.0.0
+cryptography==41.0.3
+
+# Utilitaires
 psutil==5.9.5
 tqdm==4.66.1
 colorama==0.4.6
 rich==13.5.2
 tabulate==0.9.0
-python-dotenv==1.0.0
-cryptography==41.0.3
 
-# Dépendances pour l'analyse forensique
-volatility3==2.4.1
-pyVMDK==0.2.1
-dfvfs==20230508
-pytsk3==20231007
-libevtx-python==20221022
-libscca-python==20221022
+# Analyse de fichiers
+python-magic-bin==0.4.14
+# yara-python sera installé séparément après l'installation des dépendances de développement
 
-# Dépendances pour la génération de rapports
+# Génération de rapports
 jinja2==3.1.2
 markdown==3.4.4
 weasyprint==60.1
 pygments==2.16.1
 
-# Dépendances pour l'intégration avec Cortex XDR
-cortex-xdr-api-client==1.0.0
-
-# Dépendances pour la sécurité
+# Sécurité
 pip-audit==2.6.1
-safety==2.3.5
+
+# Analyse forensique (à installer séparément si nécessaire)
+# volatility3==2.4.1
+# dfvfs==20240505
+# pytsk3==20231007
+# libevtx-python==20240504
+# libscca-python==20240427
