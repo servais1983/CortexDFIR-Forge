@@ -1,0 +1,14 @@
+analysis:
+  default_types:
+  - malware
+  - ransomware
+  - phishing
+  - persistence
+  max_file_size: 104857600
+cortex:
+  base_url: https://api.xdr.paloaltonetworks.com
+  use_env_secrets: true
+reporting:
+  company_name: Votre Entreprise
+  default_output_dir: C:\Users\stser\Documents\CortexDFIR-Reports
+  logo_path: ''

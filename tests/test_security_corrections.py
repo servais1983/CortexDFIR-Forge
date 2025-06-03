@@ -6,12 +6,12 @@ import shutil
 from unittest.mock import patch, MagicMock
 
 # Ajout du répertoire parent au chemin de recherche
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
-from src.utils.secrets_manager import SecretsManager
-from src.utils.input_validator import InputValidator
-from src.utils.secure_logger import SecureLogger
-from src.utils.network_security import SecureRequestManager
+from utils.secrets_manager import SecretsManager
+from utils.input_validator import InputValidator
+from utils.secure_logger import SecureLogger
+from utils.network_security import SecureRequestManager
 
 class TestSecurityCorrections(unittest.TestCase):
     """Tests unitaires pour les corrections de sécurité"""
@@ -153,16 +153,21 @@ class TestSecurityCorrections(unittest.TestCase):
         file_handler.setFormatter(formatter)
         logger.logger.addHandler(file_handler)
         
-        # Test de journalisation avec des informations sensibles
-        sensitive_message = "api_key=secret_value&password=123456"
-        logger.info(sensitive_message)
-        
-        # Vérification que les informations sensibles sont filtrées
-        with open(log_file, 'r') as f:
-            log_content = f.read()
-            self.assertNotIn('secret_value', log_content)
-            self.assertNotIn('123456', log_content)
-            self.assertIn('***REDACTED***', log_content)
+        try:
+            # Test de journalisation avec des informations sensibles
+            sensitive_message = "api_key=secret_value&password=123456"
+            logger.info(sensitive_message)
+            
+            # Vérification que les informations sensibles sont filtrées
+            with open(log_file, 'r') as f:
+                log_content = f.read()
+                self.assertNotIn('secret_value', log_content)
+                self.assertNotIn('123456', log_content)
+                self.assertIn('***REDACTED***', log_content)
+        finally:
+            # Fermeture explicite du handler de fichier
+            file_handler.close()
+            logger.logger.removeHandler(file_handler)
     
     @patch('requests.Session')
     def test_secure_request_manager(self, mock_session):

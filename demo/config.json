@@ -1,0 +1,13 @@
+{
+    "cortex": {
+        "base_url": "https://api.xdr.paloaltonetworks.com",
+        "api_key": "YOUR_API_KEY",
+        "api_key_id": "YOUR_API_KEY_ID",
+        "tenant_id": "YOUR_TENANT_ID",
+        "advanced_api": true
+    },
+    "demo": {
+        "test_file": "demo/samples/test_file.txt",
+        "log_level": "INFO"
+    }
+} 

@@ -7,9 +7,10 @@ from datetime import datetime
 
 # Ajout du chemin parent pour l'importation des modules
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
 from src.core.cortex_client import CortexClient
-from src.utils.config_manager import ConfigManager
+from utils.config_manager import ConfigManager
 
 class TestCortexClient(unittest.TestCase):
     """Tests unitaires pour le client Cortex XDR"""
@@ -319,8 +320,8 @@ class TestCortexClient(unittest.TestCase):
         self.assertIn("metadata", result)
         
         self.assertEqual(len(result["matches"]), 1)
-        self.assertEqual(result["matches"][0]["rule_name"], "test_rule")
-        self.assertEqual(result["matches"][0]["meta"]["severity"], "high")
+        self.assertEqual(result["matches"][0]["yara_rule"], "test_rule")
+        self.assertEqual(result["matches"][0]["yara_meta"]["severity"], "high")
         self.assertEqual(result["matches"][0]["score"], 8)
         self.assertEqual(result["score"], 8)
         

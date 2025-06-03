@@ -17,11 +17,9 @@ class SecureHTTPAdapter(HTTPAdapter):
     def init_poolmanager(self, *args, **kwargs):
         """Initialise le gestionnaire de pool avec des paramètres SSL sécurisés"""
         context = ssl.create_default_context()
-        # Force TLS 1.2 ou supérieur
-        context.options |= ssl.OP_NO_SSLv2
-        context.options |= ssl.OP_NO_SSLv3
-        context.options |= ssl.OP_NO_TLSv1
-        context.options |= ssl.OP_NO_TLSv1_1
+        # Force TLS 1.2 ou supérieur en utilisant la méthode recommandée
+        context.minimum_version = ssl.TLSVersion.TLSv1_2
+        context.maximum_version = ssl.TLSVersion.TLSv1_3
         
         # Utilise uniquement des suites de chiffrement sécurisées
         context.set_ciphers('ECDHE+AESGCM:ECDHE+CHACHA20:DHE+AESGCM:DHE+CHACHA20')

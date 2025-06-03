@@ -96,7 +96,7 @@ source venv/bin/activate  # Linux/Mac
 # venv\Scripts\activate     # Windows
 
 # Installation des dépendances sécurisées
-pip install -r requirements-updated.txt
+pip install -r requirements.txt
 
 # Configuration
 cp config/config.example.json config/config.json
