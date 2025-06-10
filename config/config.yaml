@@ -6,7 +6,7 @@ analysis:
   - persistence
   max_file_size: 104857600
 cortex:
-  base_url: https://api.xdr.paloaltonetworks.com
+  base_url: https://api-eu.xdr.paloaltonetworks.com
   use_env_secrets: true
 reporting:
   company_name: Votre Entreprise
