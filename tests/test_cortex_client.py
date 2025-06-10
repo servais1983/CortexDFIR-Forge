@@ -20,7 +20,7 @@ class TestCortexClient(unittest.TestCase):
         # Mock du gestionnaire de configuration
         self.config_manager = MagicMock()
         self.config_manager.get_cortex_config.return_value = {
-            "base_url": "https://api.xdr.paloaltonetworks.com",
+            "base_url": "https://api-eu.xdr.paloaltonetworks.com",
             "api_key": "test_api_key",
             "api_key_id": "test_api_key_id",
             "tenant_id": "test_tenant_id",
@@ -43,7 +43,7 @@ class TestCortexClient(unittest.TestCase):
 
     def test_initialization(self):
         """Test de l'initialisation du client Cortex XDR"""
-        self.assertEqual(self.cortex_client.base_url, "https://api.xdr.paloaltonetworks.com")
+        self.assertEqual(self.cortex_client.base_url, "https://api-eu.xdr.paloaltonetworks.com")
         self.assertEqual(self.cortex_client.api_key, "test_api_key")
         self.assertEqual(self.cortex_client.api_key_id, "test_api_key_id")
         self.assertEqual(self.cortex_client.tenant_id, "test_tenant_id")
