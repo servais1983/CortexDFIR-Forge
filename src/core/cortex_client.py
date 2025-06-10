@@ -27,7 +27,8 @@ class CortexClient:
         """
         self.config_manager = config_manager
         self.config = self.config_manager.get_cortex_config()
-        self.base_url = self.config.get("base_url", "https://api.xdr.paloaltonetworks.com")
+        # URL par défaut pour la région EU
+        self.base_url = self.config.get("base_url", "https://api-eu.xdr.paloaltonetworks.com")
         self.api_key = self.config.get("api_key", "")
         self.api_key_id = self.config.get("api_key_id", "")
         self.tenant_id = self.config.get("tenant_id", "")
@@ -38,7 +39,7 @@ class CortexClient:
         if not self.api_key or not self.api_key_id:
             logger.warning("Clés API Cortex XDR non configurées, certaines fonctionnalités seront limitées")
         
-        logger.info("CortexClient avancé initialisé")
+        logger.info(f"CortexClient avancé initialisé avec l'URL: {self.base_url}")
     
     def _get_auth_headers(self) -> Dict[str, str]:
         """
