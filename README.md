@@ -8,19 +8,22 @@
 ![Status](https://img.shields.io/badge/status-production--ready-success)
 ![Security](https://img.shields.io/badge/security-hardened-green)
 ![CI/CD](https://img.shields.io/badge/CI%2FCD-automated-blue)
+![Region](https://img.shields.io/badge/region-EU-blue)
 
 ## 🔍 Présentation
 
 CortexDFIR-Forge est une **solution professionnelle complète** qui industrialise l'utilisation de Cortex XDR pour les investigations DFIR (Digital Forensics & Incident Response). Ce projet transforme l'approche "cas par cas" en une méthodologie standardisée et automatisée, permettant aux analystes de sécurité de traiter efficacement de grands volumes de données forensiques.
 
 > **🎯 Version 2.0 - Production Ready** : Cette version inclut toutes les améliorations pour un déploiement professionnel sécurisé avec CI/CD, monitoring, et haute disponibilité.
+> 
+> **🇪🇺 Configuration EU** : Le projet est maintenant configuré par défaut pour la région Europe (EU) de Cortex XDR.
 
 ### 🌟 Caractéristiques principales
 
 - **🔄 Standardisation** : Workflows prédéfinis et reproductibles pour les investigations
 - **⚙️ Automatisation** : Réduction des tâches manuelles et accélération des analyses
 - **📊 Multi-format** : Support de différents types de fichiers (VMDK, logs, CSV, etc.)
-- **🔌 Intégration avancée** : Connexion native avec Cortex XDR via API
+- **🔌 Intégration avancée** : Connexion native avec Cortex XDR via API (région EU)
 - **🧩 Extensibilité** : Architecture modulaire et évolutive
 - **📝 Reporting** : Génération automatique de rapports détaillés au format HTML
 - **🐳 Containerisé** : Déploiement Docker avec orchestration Kubernetes
@@ -34,6 +37,7 @@ CortexDFIR-Forge est une **solution professionnelle complète** qui industrialis
 - **Déploiement Docker** optimisé avec haute disponibilité
 - **Monitoring complet** Prometheus + Grafana + Alerting
 - **Sauvegarde automatisée** avec restauration d'urgence
+- **Configuration EU par défaut** pour Cortex XDR
 
 ### ✅ Sécurité Renforcée
 - **Dépendances sécurisées** (100% vulnérabilités critiques corrigées)
@@ -82,6 +86,10 @@ CortexDFIR-Forge est une **solution professionnelle complète** qui industrialis
 git clone https://github.com/servais1983/CortexDFIR-Forge.git
 cd CortexDFIR-Forge
 
+# Configuration des clés API (copier et éditer le fichier)
+cp .env.example .env
+nano .env  # Ajouter vos clés API Cortex XDR
+
 # Déploiement automatisé en production
 chmod +x deploy.sh
 ./deploy.sh production
@@ -103,8 +111,8 @@ pip install -r requirements.txt
 .\setup.bat
 
 # Configuration
-cp config/config.example.json config/config.json
-# Éditer config.json avec vos credentials Cortex XDR
+cp .env.example .env
+# Éditer .env avec vos credentials Cortex XDR
 
 # Lancement
 python src/main.py
@@ -113,6 +121,11 @@ python src/main.py
 ### Option 3 : Déploiement Docker
 
 ```bash
+# Configuration des secrets Docker
+echo "votre_api_key" | docker secret create cortex_api_key -
+echo "votre_api_key_id" | docker secret create cortex_api_key_id -
+echo "votre_tenant_id" | docker secret create cortex_tenant_id -
+
 # Déploiement complet avec monitoring
 docker-compose -f docker-compose.prod.yml up -d
 
@@ -122,12 +135,13 @@ docker-compose -f docker-compose.prod.yml up -d
 # Prometheus: http://localhost:9090
 ```
 
-## 🔒 Configuration Cortex XDR
+## 🔒 Configuration Cortex XDR (Région EU)
 
+### Configuration par défaut (EU)
 ```json
 {
   "cortex_xdr": {
-    "base_url": "https://api-{fqdn}.xdr.paloaltonetworks.com",
+    "base_url": "https://api-eu.xdr.paloaltonetworks.com",
     "api_key": "VOTRE_API_KEY",
     "api_key_id": "VOTRE_API_KEY_ID", 
     "tenant_id": "VOTRE_TENANT_ID",
@@ -140,6 +154,43 @@ docker-compose -f docker-compose.prod.yml up -d
   }
 }
 ```
+
+### Autres régions disponibles
+- **US**: `https://api-us.xdr.paloaltonetworks.com`
+- **APAC**: `https://api-apac.xdr.paloaltonetworks.com`
+- **EU**: `https://api-eu.xdr.paloaltonetworks.com` (par défaut)
+
+### Génération des clés API
+1. Connectez-vous à la console Cortex XDR
+2. Allez dans **Settings > Configurations > API Keys**
+3. Créez une nouvelle clé avec les permissions suivantes :
+   - File Upload & Analysis
+   - Incident Management
+   - XQL Query Execution
+   - Endpoint Management
+   - Alert Management
+
+## ✅ Validation de Compatibilité
+
+### Tests de connexion
+```bash
+# Test de connexion à l'API Cortex XDR
+python -m src.utils.test_cortex_connection
+
+# Tests unitaires complets
+python -m pytest tests/test_cortex_client.py -v
+
+# Test d'analyse d'un fichier
+python src/main.py --test-file samples/test.exe
+```
+
+### Checklist de validation
+- [ ] Clés API générées avec permissions adéquates
+- [ ] URL configurée pour la région EU (`api-eu.xdr.paloaltonetworks.com`)
+- [ ] Fichier `.env` créé avec les bonnes valeurs
+- [ ] Test de connexion réussi
+- [ ] Tests unitaires passent
+- [ ] Analyse de fichier test réussie
 
 ## 📊 Fonctionnalités Avancées
 
@@ -303,6 +354,7 @@ python src/utils/health_check.py
 - ✅ Sécurité renforcée (CVE patching)
 - ✅ Documentation production
 - ✅ Containerisation Docker
+- ✅ Configuration EU par défaut
 
 ### Q2 2025 🚧
 - 🔄 Interface web moderne (React)
