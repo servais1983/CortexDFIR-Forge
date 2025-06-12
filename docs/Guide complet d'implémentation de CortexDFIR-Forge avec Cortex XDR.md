@@ -1,6 +1,5 @@
 # Guide complet d'implémentation de CortexDFIR-Forge avec Cortex XDR
-
-**Auteur :** Manus IA  
+ 
 **Date :** 12 juin 2025  
 **Licence :** CC BY-SA 4.0
 
